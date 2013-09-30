@@ -162,7 +162,33 @@ page.doDepictedScreenshots = function() {
             window.eval(config.injectJs);
         }, config);
     }
+    if (config.elementSelector) {
+       // TODO: don't assume jQuery is loaded and called jQuery  
 
+        /**
+         *  Inheritance issue...eval to make sure elementSelector is in the windows scope
+         */
+        eval('function workaround(){ window.componentSelector = jQuery("' + config.elementSelector + '");}')
+                page.evaluate(workaround);
+
+        console.log('Selecting Element: ' + config.elementSelector);
+
+        var rect = page.evaluate(function(){
+            // find the component
+            var element = jQuery(window.componentSelector);
+            // get its bounding box
+            var height = element.height();
+            var width  = element.width();
+            var box = element.position();
+            // we want {top, left, width, height}
+            box.width  = width;
+            box.height = height;
+            return box;
+        });
+
+        page.clipRect = rect;
+        
+    }
     // TODO: Do we need this setTimeout?
     window.setTimeout(function() {
         console.log('Taking the screenshot!');
